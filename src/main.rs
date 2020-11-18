@@ -5,8 +5,8 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::env;
 
-mod kylin_networ_api;
-type KylinNetworkAPI = kylin_networ_api::KylinNetworkAPI;
+mod kylin_network_api;
+type KylinNetworkAPI = kylin_network_api::KylinNetworkAPI;
 
 #[derive(Debug, Serialize, Deserialize)]
 struct RpcRequest {
