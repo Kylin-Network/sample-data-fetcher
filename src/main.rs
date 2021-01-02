@@ -93,7 +93,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/api_list").route(web::get().to(api_list)))
             .service(web::resource("/").route(web::post().to(rpc_handler)))
     })
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
     .run()
     .await
 }
