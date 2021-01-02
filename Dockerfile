@@ -1,24 +1,20 @@
-FROM rust:1.47 as builder
+FROM paritytech/ci-linux:production as builder
 
 # Prepare dep cache layer
 RUN USER=root cargo new --bin app
 WORKDIR /app
 
 COPY ./Cargo.toml ./Cargo.lock ./
-RUN cargo build --release
-RUN rm src/*.rs
-
 COPY ./src ./src
+#COPY ./ustc.config /root/.cargo/config
+#RUN cat ~/.cargo/config
+RUN cargo build
 
-# Build for release
-RUN rm ./target/release/deps/kylin_data_proxy*
-RUN cargo build --release
 
-
-FROM debian:buster-slim
-
-COPY --from=builder /app/target/release/kylin_data_proxy ${APP}/kylin_data_proxy
+FROM ubuntu
+RUN apt-get update && apt-get install ca-certificates -y
+COPY --from=builder /app/target/debug/data_fetcher /data_fetcher
 
 EXPOSE 8080
 
-CMD ["./kylin_data_proxy"]
+#CMD ["./data_fetcher"]
