@@ -1,4 +1,4 @@
-# Data-Fetcher
+# Data Fetcher
 
 This application converts different external API requests into unified endpoind
 to simplify usage in pallet side.
