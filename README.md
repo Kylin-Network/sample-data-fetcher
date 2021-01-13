@@ -20,7 +20,7 @@ If no error here, the data proxy service will be started at 8080 port. Currenly 
 * bitmex_large_order_list
 * bitfinex_holdings_minutes
 
-Please refer [Kylin Contract Data API document](https://docs-api.kylin.network/#contract-data-api) for respond detail.
+please refer [Kylin Contract Data API document](https://docs-api.kylin.network/#contract-data-api) for respond detail.
 
 here is a sample response sent via [*httpie*](https://httpie.io/):
 
