@@ -13,7 +13,7 @@ export KYLIN_API_SECRET=<replace_me>
 cargo run
 ```
 
-If no error here, the data proxy service will be started at 8080 port. Currenly only four queries are supported:
+if no error here, the data proxy service will be started at 8080 port. Currenly only four queries are supported:
 
 * liquidation_order_list
 * bitmex_perpetual_contract_rate
