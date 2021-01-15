@@ -5,7 +5,7 @@ to simplify usage in pallet side.
 
 ## Usage
 
-Before running this program, please acquire API key and secret from kylin network.
+before running this program, please acquire API key and secret from kylin network.
 
 ```bash
 export KYLIN_API_KEY=<replace_me>
