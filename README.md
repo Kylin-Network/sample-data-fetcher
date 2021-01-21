@@ -22,7 +22,7 @@ if no error here, the data proxy service will be started at 8080 port. Currenly 
 
 please refer [Kylin Contract Data API document](https://docs-api.kylin.network/#contract-data-api) for respond detail.
 
-here is a sample response sent via [*httpie*](https://httpie.io/):
+Here is a sample response sent via [*httpie*](https://httpie.io/):
 
 ```bash
 $ http post 127.0.0.1:8080/ name=bitfinex_holdings_minutes
