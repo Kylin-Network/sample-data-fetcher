@@ -1,10 +1,14 @@
 extern crate pretty_env_logger;
 
+use chrono::Utc;
+use uuid::Uuid;
 use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use std::env;
+use actix_web::http::header::IntoHeaderValue;
+use reqwest::Response;
 
 mod kylin_network_api;
 type KylinNetworkAPI = kylin_network_api::KylinNetworkAPI;
@@ -12,6 +16,42 @@ type KylinNetworkAPI = kylin_network_api::KylinNetworkAPI;
 #[derive(Debug, Serialize, Deserialize)]
 struct RpcRequest {
     api_name: String,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ApiLog {
+    request_id: String,
+    service_name: String,
+    source: String,
+    url_path: String,
+    url_query: String,
+    request_method: String,
+    request_body: String,
+    request_time: String,
+    response_time: String,
+    response_content: String,
+}
+
+async fn save_data_to_es(api_log: ApiLog) {
+    let client = reqwest::Client::new();
+
+    let es_host = match env::var("KYLIN_ES_HOST") {
+        Ok(val) => val,
+        Err(_e) => String::from("localhost:9200"),
+    };
+
+    let full_es_endpoint = format!("http://{}/kylin_access_tracking/_doc/", es_host);
+    let resp = match client.post(full_es_endpoint.as_str())
+        .json(&api_log)
+        .send()
+        .await{
+        Ok(resp) => resp,
+        Err(e) => panic!("Es save err: {}", e),
+    };
+
+    println!("api log: {:?}", api_log);
+    println!("ES host: {}, resp: {:?}", full_es_endpoint, resp);
+    println!("Resp content: {:?}", resp.text().await);
 }
 
 async fn api_list() -> Result<HttpResponse, Error> {
@@ -47,6 +87,19 @@ async fn rpc_handler(req: web::Json<RpcRequest>) -> Result<HttpResponse, Error> 
 
     let api = KylinNetworkAPI::new(api_key, api_secret);
 
+    let mut api_log = ApiLog{
+        request_id: Uuid::new_v4().to_string(),
+        service_name: String::from(rpc_fn_name),
+        source: "".to_string(),
+        url_path: String::from("/"),
+        url_query: "".to_string(),
+        request_method: "POST".to_string(),
+        request_body: "".to_string(),
+        request_time: Utc::now().timestamp_millis().to_string(),
+        response_time: "".to_string(),
+        response_content: "".to_string(),
+    };
+
     match rpc_fn_name {
         "liquidation_order_list" => {
             let params: BTreeMap<String, String> = [
@@ -59,6 +112,7 @@ async fn rpc_handler(req: web::Json<RpcRequest>) -> Result<HttpResponse, Error> 
             .cloned()
             .collect();
 
+            api_log.request_body = serde_json::to_value(params.clone()).unwrap().to_string();
             resp = api.contract_liquidation_order_list(params).await;
         }
         "bitmex_perpetual_contract_rate" => {
@@ -75,6 +129,9 @@ async fn rpc_handler(req: web::Json<RpcRequest>) -> Result<HttpResponse, Error> 
             panic!("Unknown rpc function: {}", rpc_fn_name);
         } // TODO: Return bad request error
     }
+    api_log.response_time = Utc::now().timestamp_millis().to_string();
+    api_log.response_content = resp.clone();
+    save_data_to_es(api_log).await;
 
     Ok(HttpResponse::Ok()
         .content_type("application/json")
@@ -88,7 +145,6 @@ async fn main() -> std::io::Result<()> {
 
     HttpServer::new(|| {
         App::new()
-            // enable logger
             .wrap(middleware::Logger::default())
             .service(web::resource("/api_list").route(web::get().to(api_list)))
             .service(web::resource("/").route(web::post().to(rpc_handler)))
