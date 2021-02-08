@@ -1,0 +1,50 @@
+{
+  "mappings": {
+    "properties": {
+      "request_id": {
+        "type": "keyword"
+      },
+      "service_name": {
+        "type": "keyword"
+      },
+      "source": {
+        "type": "keyword"
+      },
+      "url_path": {
+        "type": "keyword"
+      },
+      "url_query": {
+        "type": "keyword"
+      },
+      "request_method": {
+        "type": "keyword"
+      },
+      "request_body": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "request_time": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+      },
+      "response_time": {
+        "type": "date",
+        "format": "yyyy-MM-dd HH:mm:ss||yyyy-MM-dd||epoch_millis"
+      },
+      "response_body": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}
