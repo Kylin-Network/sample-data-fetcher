@@ -2,8 +2,6 @@
 
 set -x
 
-sleep 30
-
 curl -H 'Content-Type: application/json' \
     -XPUT --data "@es_index.json" \
     ${ES_HOST}/${ES_INDEX_NAME}
