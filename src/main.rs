@@ -4,11 +4,9 @@ use chrono::Utc;
 use uuid::Uuid;
 use actix_web::{middleware, web, App, Error, HttpResponse, HttpServer};
 use serde::{Deserialize, Serialize};
-use serde_json::{json, Value};
+use serde_json::Value;
 use std::collections::BTreeMap;
 use std::env;
-use actix_web::http::header::IntoHeaderValue;
-use reqwest::Response;
 
 mod kylin_network_api;
 type KylinNetworkAPI = kylin_network_api::KylinNetworkAPI;
@@ -40,7 +38,12 @@ async fn save_data_to_es(api_log: ApiLog) {
         Err(_e) => String::from("localhost:9200"),
     };
 
-    let full_es_endpoint = format!("http://{}/kylin_access_tracking/_doc/", es_host);
+    let es_index_name = match env::var("KYLIN_ES_INDEX_NAME") {
+        Ok(val) => val,
+        Err(_e) => String::from("kylin_access_tracking"),
+    };
+
+    let full_es_endpoint = format!("http://{}/{}/_doc/", es_host, es_index_name);
     let resp = match client.post(full_es_endpoint.as_str())
         .json(&api_log)
         .send()
